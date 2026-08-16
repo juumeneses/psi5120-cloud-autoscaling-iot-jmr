@@ -1,0 +1,25 @@
+# Python caches and local virtual environments.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Local configuration, credentials, certificates and secrets.
+.env
+*.pem
+*.key
+*.crt
+kubeconfig*
+
+# Generated evidence and document build artefacts.
+evidence/raw/
+articles/build/
+*.aux
+*.log
+*.out
+
+# Operating-system and editor metadata.
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

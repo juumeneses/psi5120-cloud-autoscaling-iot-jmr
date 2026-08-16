@@ -1,0 +1,35 @@
+# This disposable pod continuously calls the bounded CPU endpoint.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: load-generator
+  namespace: psi5120-ta1
+  labels:
+    app.kubernetes.io/name: load-generator
+spec:
+  restartPolicy: Never
+  containers:
+    - name: load-generator
+      image: busybox:1.37.0
+      # Multiple background workers maintain pressure while the shell remains observable.
+      command: ["/bin/sh", "-c"]
+      args:
+        - |
+          echo "load_started_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          for worker in 1 2 3 4; do
+            while true; do
+              wget -q -O /dev/null "http://autoscaling-api/cpu?duration_ms=500"
+            done &
+          done
+          wait
+      resources:
+        requests:
+          cpu: 20m
+          memory: 16Mi
+        limits:
+          cpu: 200m
+          memory: 64Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]

@@ -1,0 +1,11 @@
+# EKS provisions an AWS Network Load Balancer for public HTTP evidence.
+apiVersion: v1
+kind: Service
+metadata:
+  name: autoscaling-api
+  namespace: psi5120-ta1
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
+spec:
+  type: LoadBalancer

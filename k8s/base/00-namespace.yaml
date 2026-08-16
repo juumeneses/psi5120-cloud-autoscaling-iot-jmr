@@ -1,0 +1,7 @@
+# A dedicated namespace isolates all graded resources from unrelated workloads.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: psi5120-ta1
+  labels:
+    app.kubernetes.io/part-of: psi5120-ta1

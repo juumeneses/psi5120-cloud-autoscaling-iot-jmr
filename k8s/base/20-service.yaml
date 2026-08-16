@@ -1,0 +1,16 @@
+# A stable ClusterIP lets the load generator reach whichever pods are ready.
+apiVersion: v1
+kind: Service
+metadata:
+  name: autoscaling-api
+  namespace: psi5120-ta1
+  labels:
+    app.kubernetes.io/name: autoscaling-api
+spec:
+  selector:
+    app.kubernetes.io/name: autoscaling-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+  type: ClusterIP

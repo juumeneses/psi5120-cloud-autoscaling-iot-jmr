@@ -1,0 +1,22 @@
+# eksctl definition for the short-lived experiment cluster in us-east-1.
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: psi5120-ta1-jmr
+  region: us-east-1
+  tags:
+    Project: PSI5120-TA1
+    Owner: jmr
+managedNodeGroups:
+  - name: workers
+    instanceType: t3.medium
+    desiredCapacity: 2
+    minSize: 2
+    maxSize: 2
+    volumeSize: 20
+    privateNetworking: false
+    labels:
+      workload: psi5120
+    tags:
+      Project: PSI5120-TA1
+      Owner: jmr

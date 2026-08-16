@@ -1,0 +1,11 @@
+# Before use, the deployment script substitutes the ECR placeholder in a temp copy.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+patches:
+  - path: service-loadbalancer.yaml
+images:
+  - name: psi5120-autoscaling-api
+    newName: __ECR_IMAGE__
+    newTag: 1.0.0-ta1

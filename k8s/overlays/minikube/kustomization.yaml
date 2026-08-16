@@ -1,0 +1,9 @@
+# Minikube consumes the image loaded directly into its container runtime.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+images:
+  - name: psi5120-autoscaling-api
+    newName: psi5120-autoscaling-api
+    newTag: 1.0.0-ta1

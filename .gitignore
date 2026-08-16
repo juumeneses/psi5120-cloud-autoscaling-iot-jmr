@@ -14,6 +14,8 @@ kubeconfig*
 # Generated evidence and document build artefacts.
 evidence/raw/
 articles/build/
+tmp/
+psi5120-ta1-cloudshell.zip
 *.aux
 *.log
 *.out

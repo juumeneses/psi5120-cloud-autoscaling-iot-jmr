@@ -9,7 +9,8 @@ metadata:
     Owner: jmr
 managedNodeGroups:
   - name: workers
-    instanceType: t3.medium
+    # t3.small is an x86 type accepted by the AWS Free Plan used in the experiment.
+    instanceType: t3.small
     desiredCapacity: 2
     minSize: 2
     maxSize: 2

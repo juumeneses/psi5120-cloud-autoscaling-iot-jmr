@@ -63,16 +63,24 @@ aws eks update-kubeconfig --name psi5120-ta1-jmr --region us-east-1
 ```
 
 Run `scripts/eks_build_push.ps1` to create ECR and publish the image. Pass its
-printed image URI to `scripts/eks_deploy.ps1`. Install Metrics Server following
-the current AWS EKS documentation, then wait until both `kubectl top nodes` and
-`kubectl get hpa` report numeric CPU data.
+printed image URI to `scripts/eks_deploy.ps1`. The practical execution used two
+managed `t3.small` nodes because the account's AWS Free Plan rejected
+`t3.medium`. Install the managed Metrics Server add-on and validate it:
+
+```bash
+aws eks create-addon --cluster-name psi5120-ta1-jmr \
+  --addon-name metrics-server --region us-east-1
+aws eks wait addon-active --cluster-name psi5120-ta1-jmr \
+  --addon-name metrics-server --region us-east-1
+kubectl top nodes
+```
 
 Execute the same three experiments:
 
 ```bash
-bash scripts/run_hpa_experiment.sh eks 1 300 300
-bash scripts/run_hpa_experiment.sh eks 2 300 300
-bash scripts/run_hpa_experiment.sh eks 3 300 300
+bash scripts/run_hpa_experiment.sh eks 1 180 240
+bash scripts/run_hpa_experiment.sh eks 2 180 240
+bash scripts/run_hpa_experiment.sh eks 3 180 240
 ```
 
 ## 4. Required screenshots

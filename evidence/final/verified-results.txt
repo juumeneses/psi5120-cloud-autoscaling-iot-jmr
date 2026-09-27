@@ -29,3 +29,12 @@ Device Shadow final state:
 
 Security note: account ID, certificate ARN, endpoint, private key, public
 certificate, and request IDs are intentionally omitted from this evidence.
+
+Post-evidence cleanup verification:
+- Thing: deleted;
+- IoT policy: deleted;
+- IoT Rule: deleted;
+- Lambda function: deleted;
+- DynamoDB table: deleted;
+- IAM role: deleted;
+- IoT certificates remaining in the account: 0.

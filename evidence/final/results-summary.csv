@@ -8,3 +8,4 @@ Device Shadow,desired 15 equals reported 15,converged,passed
 Least privilege,forbidden subscribe denied,denied,passed
 API automated tests,eight tests,8 passed,passed
 Kubernetes manifest,Kustomize render succeeds,rendered,passed
+AWS cleanup,all named resources removed and zero certificates remain,verified,passed

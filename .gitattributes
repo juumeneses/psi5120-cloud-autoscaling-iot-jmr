@@ -1,0 +1,2 @@
+# Preserve generated documents byte-for-byte across Windows and Linux clones.
+*.pdf binary

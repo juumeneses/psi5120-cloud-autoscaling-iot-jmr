@@ -1,0 +1,20 @@
+# Non-secret resource identifiers configure the optional AWS IoT API endpoints.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoscaling-api
+  namespace: psi5120-ta1
+spec:
+  template:
+    spec:
+      containers:
+        - name: api
+          env:
+            - name: AWS_REGION
+              value: us-east-1
+            - name: TELEMETRY_TABLE
+              value: psi5120-final-jmr-telemetry
+            - name: IOT_THING_NAME
+              value: psi5120-final-jmr-device01
+            - name: IOT_COMMAND_TOPIC
+              value: psi5120/final/psi5120-final-jmr-device01/command

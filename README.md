@@ -3,10 +3,11 @@
 Individual project by **Julia Meneses Roberto** for PSI512 — Cloud Computing
 Topics (2026).
 
-This repository contains the complete first evaluative assignment: the same
-commented FastAPI workload deployed with a CPU-based Kubernetes Horizontal Pod
-Autoscaler on Minikube and Amazon EKS. The `/cpu` endpoint performs bounded,
-side-effect-free work so scale-up and recovery can be measured consistently.
+This repository contains the completed first evaluative assignment and its
+final-project extension. The immutable `ta1-submission` tag contains the
+Minikube/EKS HPA comparison. The current version adds a software-only IoT
+device, AWS IoT Core, Lambda, DynamoDB, Device Shadow, and cloud-to-device
+commands while retaining the autoscaled FastAPI workload.
 
 ## TA1 contents
 
@@ -28,11 +29,25 @@ kubectl apply --dry-run=client -k k8s/overlays/minikube
 
 See `docs/DEPLOYMENT_AND_TEST_GUIDE.md` for the complete procedure.
 
-## Final-project boundary
+## Final-project extension (option 2.2)
 
-The future IoT extension is intentionally absent from the TA1 implementation.
-It will start only after the TA1 submission is confirmed and will preserve this
-version under the Git tag `ta1-submission`.
+- `iot/device_simulator.py`: X.509 mTLS MQTT device, deterministic sensor data,
+  simulated actuator, commands, shadow convergence, and authorization test;
+- `iot/lambda_function.py`: validated, least-privilege telemetry persistence;
+- `app/main.py`: DynamoDB query, IoT command, and Device Shadow endpoints;
+- `aws/`: reviewed provisioning, IAM policy, and cleanup automation;
+- `k8s/overlays/final`: version 2 API with the original CPU-based HPA.
+
+No physical sensor is required: sensor readings and actuator state are generated
+by the containerized Python client. See `docs/FINAL_PROJECT_GUIDE.md` for the
+complete reproducible procedure and evidence checklist.
+
+```bash
+python -m pytest -q
+docker build -t psi5120-autoscaling-api:2.0.0-final .
+docker build -t psi5120-iot-device:2.0.0-final iot/
+kubectl apply --dry-run=client -k k8s/overlays/final
+```
 
 ## Security
 

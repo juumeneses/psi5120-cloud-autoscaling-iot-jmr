@@ -1,0 +1,2 @@
+# AWS IoT Device SDK v2 provides MQTT 5/mTLS and Device Shadow clients.
+awsiotsdk==1.26.0

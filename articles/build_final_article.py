@@ -17,9 +17,9 @@ MARGIN, GAP = 0.60 * inch, 0.22 * inch
 COL_W = (PAGE_W - 2 * MARGIN - GAP) / 2
 
 base = getSampleStyleSheet()
-body = ParagraphStyle("body", parent=base["BodyText"], fontName="Times-Roman", fontSize=9, leading=10.7, alignment=TA_JUSTIFY, spaceAfter=5)
-head = ParagraphStyle("head", parent=body, fontName="Times-Bold", fontSize=10, leading=12, spaceBefore=7, spaceAfter=4, keepWithNext=True)
-sub = ParagraphStyle("sub", parent=body, fontName="Times-BoldItalic", fontSize=9.2, leading=11, spaceBefore=5, keepWithNext=True)
+body = ParagraphStyle("body", parent=base["BodyText"], fontName="Times-Roman", fontSize=10, leading=12.2, alignment=TA_JUSTIFY, spaceAfter=6)
+head = ParagraphStyle("head", parent=body, fontName="Times-Bold", fontSize=10.5, leading=12.5, spaceBefore=8, spaceAfter=4, keepWithNext=True)
+sub = ParagraphStyle("sub", parent=body, fontName="Times-BoldItalic", fontSize=10, leading=12, spaceBefore=6, keepWithNext=True)
 title = ParagraphStyle("title", parent=body, fontName="Helvetica-Bold", fontSize=15, leading=18, alignment=TA_CENTER, spaceAfter=8)
 author = ParagraphStyle("author", parent=body, fontSize=10, leading=12, alignment=TA_CENTER, spaceAfter=8)
 abstract = ParagraphStyle("abstract", parent=body, fontSize=8.4, leading=9.8, leftIndent=7, rightIndent=7)
@@ -46,7 +46,9 @@ story = []
 def H(text): story.append(Paragraph(text, head))
 def S(text): story.append(Paragraph(text, sub))
 def P(text): story.append(Paragraph(text, body))
-def PAGE(): story.append(PageBreak())
+def PAGE():
+    """Retain semantic source boundaries while allowing continuous column flow."""
+    return None
 def T(rows, widths=None):
     table = Table(rows, colWidths=widths, repeatRows=1, hAlign="CENTER")
     table.setStyle(TableStyle([("FONT", (0, 0), (-1, -1), "Times-Roman", 7.2),
@@ -213,6 +215,51 @@ H("APPENDIX A. ACCEPTANCE MATRIX")
 T([["Artifact", "Result"], ["Public source repository", "Available"],
    ["Intermediate immutable tag", "ta1-submission"], ["Commented automation", "Included"],
    ["Sanitized live evidence", "Included"], ["Cleanup automation", "Included"]], [1.65*inch, 1.2*inch])
+H("APPENDIX B. INTERFACE CONTRACT")
+T([["Method and path", "Purpose", "External service"],
+   ["GET /", "version and pod identity", "none"],
+   ["GET /health", "Kubernetes probes", "none"],
+   ["GET /cpu", "bounded HPA load", "none"],
+   ["GET /telemetry", "recent device readings", "DynamoDB"],
+   ["POST /commands", "cloud-to-device control", "IoT data plane"],
+   ["GET /device-shadow", "desired/reported state", "IoT Shadow"],
+   ["POST /device-shadow/desired", "set target temperature", "IoT Shadow"]],
+  [1.05*inch, 1.05*inch, 0.95*inch])
+P("The CPU route is deliberately independent of AWS so HPA experiments remain possible when cloud integration is disabled. IoT endpoints obtain clients through small factory functions, enabling unit tests to replace external services without credentials. Query bounds reject unreasonable telemetry limits, command length is constrained, and target temperature is restricted to 10-35 degrees Celsius. Runtime identities expose pod, namespace, and node names but no host credentials or account metadata.")
+P("The command response includes the selected topic and generated command identifier so an operator can correlate API, broker, and device logs. The telemetry response names the requested device and returns newest records first. Shadow reads preserve the AWS document structure because version and metadata fields are useful when diagnosing reconciliation. Desired-state writes return the exact requested document, making the asynchronous boundary explicit rather than claiming that the actuator has already applied the value.")
+H("APPENDIX C. RESOURCE AND TRUST INVENTORY")
+T([["Resource", "Principal", "Allowed operation"],
+   ["MQTT client", "device certificate", "scoped topics only"],
+   ["IoT Rule", "iot.amazonaws.com", "invoke named Lambda"],
+   ["Lambda", "execution role", "PutItem + logs"],
+   ["FastAPI", "standard AWS chain", "query/publish/shadow"],
+   ["DynamoDB", "Lambda/API roles", "write/query by role"]],
+  [0.8*inch, 1.05*inch, 1.2*inch])
+P("Trust is intentionally segmented. The device certificate cannot invoke Lambda or access DynamoDB. The IoT Rule cannot use the device Shadow. Lambda cannot subscribe or publish MQTT messages. The FastAPI image contains no certificate or static AWS key. This separation limits the impact of a compromised component and makes each permission independently reviewable.")
+P("The provisioning script resolves the AWS account identifier only at runtime to construct resource ARNs. The repository policy template therefore remains portable and contains no account-specific value. The certificate is issued after Thing and policy creation, immediately attached to both, and written only to the ignored CloudShell directory. Cleanup reverses these dependencies in the order required by AWS: detach, deactivate, delete certificate, then delete policy and Thing.")
+H("APPENDIX D. OBSERVED EXECUTION TRACE")
+T([["UTC time", "Component", "Verified event"],
+   ["02:21:29.811", "Lambda", "PutItem sequence 1001"],
+   ["02:21:32.049", "Lambda", "PutItem sequence 1002"],
+   ["02:21:35.012", "Lambda", "PutItem sequence 1003"],
+   ["same session", "MQTT device", "cmd-001 fan-on"],
+   ["same session", "Device Shadow", "desired/reported 15"],
+   ["post-session", "IoT authorization", "forbidden SUBSCRIBE denied"]],
+  [0.75*inch, 0.85*inch, 1.45*inch])
+P("The trace demonstrates causal continuity without exposing request identifiers. Sequences were visible in the device publish acknowledgments, Lambda log events, and DynamoDB query. The one-to-one agreement is stronger than a count alone because it detects missing, duplicate, or reordered identifiers. The timestamps are CloudWatch ingestion records and are used only to confirm the configured interval, not to claim sub-second transport latency.")
+P("After evidence collection, the cleanup script returned completion and independent read operations reported the Thing, policy, rule, Lambda function, DynamoDB table, and IAM role as deleted. A final account query returned zero IoT certificates. These results were added to the sanitized evidence file after the original cloud data had been preserved in the article and repository.")
+H("APPENDIX E. REPRODUCTION CHECKLIST")
+P("Before execution: verify us-east-1, inspect the diff from ta1-submission, confirm that no certs directory is tracked, run all eight tests, render the Kustomize overlay, and review the IAM and IoT policies. During execution: keep the private key in CloudShell, record connection and subscription acknowledgments, publish exactly three deterministic readings, send cmd-001, set the desired target to 15, and run the forbidden subscription only after successful authentication.")
+P("Before teardown: query the table, read the final Shadow, inspect CloudWatch for all three sequences, sanitize outputs, build the article, and render every page. After teardown: verify every named resource through a read-only describe operation, confirm that no IoT certificate remains, update the evidence summary, run the tests again, ensure the Git worktree is clean, and move final-submission to the reviewed commit.")
+P("The checklist distinguishes evidence of configuration from evidence of behavior. A policy document alone does not prove denial, an IoT Rule alone does not prove invocation, a Lambda function alone does not prove persistence, and a desired Shadow alone does not prove convergence. The project therefore records observable results at each boundary and states explicitly where runtime validation was unavailable.")
+H("APPENDIX F. ARTIFACT MAP")
+P("The application implementation is in app/main.py and its behavioral contract is exercised by tests/test_api.py. The top-level Dockerfile packages the autoscaled HTTP service. Kubernetes base resources remain in k8s/base, while k8s/overlays/final changes only the image version and non-secret IoT configuration. This separation lets reviewers reproduce the intermediate system directly from ta1-submission and inspect the extension as a focused Git diff.")
+P("The IoT directory contains the simulator, Lambda handler, pinned device SDK dependency, and simulator Dockerfile. The aws directory contains the device policy template, Lambda trust policy, provisioning script, and cleanup script. docs/FINAL_PROJECT_GUIDE.md provides commands, expected observations, troubleshooting boundaries, and the evidence checklist. evidence/final contains only sanitized summaries; raw certificate material is excluded by .gitignore.")
+P("The article source is executable rather than manually formatted. articles/build_final_article.py generates the stable file under output/pdf using an IEEE-style two-column page template, embedded tables, page numbers, and fixed metadata. Regeneration is deterministic except for PDF creation metadata. The generated PDF is marked binary in .gitattributes to prevent Windows line-ending conversion from corrupting it.")
+H("APPENDIX G. REVIEW NOTES")
+P("Reviewers should distinguish the two empirical datasets. The intermediate tag contains six HPA trials, three in Minikube and three in EKS. The final tag contains the live AWS IoT experiment and preserves the HPA configuration, but does not claim a new final-version Minikube cycle because the container daemon was unavailable during the final session. This limitation is documented in the Results and Validity sections instead of being replaced with invented measurements.")
+P("All AWS evidence corresponds to one controlled session on 27 September 2026 in us-east-1. The three sequences, Lambda timestamps, DynamoDB count, command identifier, Shadow value, authorization denial, and cleanup status are real observations. Approximate cost discussion intentionally avoids presenting free-tier assumptions as billing facts. The resource inventory and cleanup verification allow the experiment to be audited without leaving chargeable infrastructure active.")
+P("The final-submission tag is the authoritative hand-in version. It includes source code, tests, manifests, scripts, documentation, sanitized evidence, and the rendered paper. The public repository URL is supplied separately in the learning platform submission so instructors can clone the exact tag and compare it with ta1-submission.")
 
 doc.build(story)
 print(OUT)

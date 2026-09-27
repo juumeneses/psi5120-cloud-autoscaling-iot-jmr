@@ -1,0 +1,10 @@
+test,expected,observed,status
+MQTT authentication,mTLS connection accepted,connected,passed
+Telemetry,QoS 1 sequences 1001-1003,3 publishes,passed
+Cloud-to-device command,cmd-001 fan-on,received,passed
+IoT Rule and Lambda,one invocation per reading,3 successful logs,passed
+DynamoDB,three persisted readings,Count 3,passed
+Device Shadow,desired 15 equals reported 15,converged,passed
+Least privilege,forbidden subscribe denied,denied,passed
+API automated tests,eight tests,8 passed,passed
+Kubernetes manifest,Kustomize render succeeds,rendered,passed

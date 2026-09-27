@@ -1,0 +1,31 @@
+PSI5120 final project - verified AWS experiment
+Date (UTC): 2026-09-27
+Region: us-east-1
+Device: psi5120-final-jmr-device01
+
+MQTT/mTLS:
+- connection accepted with the device X.509 certificate;
+- QoS 1 subscriptions accepted for command and Shadow delta topics;
+- telemetry sequences 1001, 1002, and 1003 published at QoS 1;
+- command cmd-001 with value fan-on received by the simulator;
+- Shadow delta target_temperature=15 received and reported as 15;
+- simulator cleanly published offline state and disconnected.
+
+Least privilege:
+- attempted SUBSCRIBE to psi5120/final/psi5120-final-jmr-device01/forbidden/#;
+- AWS IoT refused the operation;
+- simulator emitted EXPECTED_AUTHORIZATION_FAILURE.
+
+Serverless persistence:
+- DynamoDB query returned Count=3 and ScannedCount=3;
+- Lambda emitted dynamodb_put_ok for sequences 1001, 1002, and 1003;
+- CloudWatch timestamps: 02:21:29.811, 02:21:32.049, and 02:21:35.012 UTC;
+- stored temperatures: 21.8, 22.1, and 22.4 degrees Celsius.
+
+Device Shadow final state:
+- desired.target_temperature=15;
+- reported.target_temperature=15;
+- reported.simulator_online=false after orderly disconnect.
+
+Security note: account ID, certificate ARN, endpoint, private key, public
+certificate, and request IDs are intentionally omitted from this evidence.
